@@ -1,4 +1,4 @@
-<h1>Web chat</h>
+<h1>Web chat</h1>
 <p>A website chat app.</p>
 <p>Technologies used:</p>
 <ol>
