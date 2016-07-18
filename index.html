@@ -4,38 +4,110 @@
     <meta charset="utf-8">
     <title>Web Chat</title>
      <meta name="viewport" content="width=device-width, initial-scale=1">
+
+     <!-- Material Design Lite -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
+        <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+        <!-- customs css -->
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+     <link type="text/css" rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
-    <div id="wrapper">
-    <div id="menu">
-        <p class="welcome">Welcome, <b></b></p>
-        <p class="logout"><a id="exit" href="#">Exit Chat</a></p>
-        <div style="clear:both"></div>
+    <div class="mdl-layout mdl-layout--fixed-header">
+
+  <!-- Header section containing logo -->
+  <header class="mdl-layout__header">
+    <div class="mdl-cell  mdl-grid">
+      <div class="mdl-layout__header-row">
+        <h3><i class="material-icons">chat_bubble_outline</i> Friendly Chat</h3>
+      </div>
+      <div id="user-container">
+        <div hidden id="user-pic"></div>
+        <div hidden id="user-name"></div>
+        <button hidden id="sign-out" class="mdl-button">
+          Sign-out
+        </button>
+        <button hidden id="sign-in" class="mdl-button">
+          <i class="material-icons">account_circle</i>Sign-in with Google
+        </button>
+      </div>
     </div>
+  </header>
+  <main class="mdl-layout__content">
+    <div id="messages-card-container" class="mdl-cell mdl-grid">
 
-    <div id="chatbox"></div>
+      <!-- Messages container -->
+      <div id="messages-card" class="mdl-card">
+        <div class="mdl-card__supporting-text">
+          <div id="messages">
+            <span id="message-filler"></span>
+          </div>
+          <form id="message-form" action="#">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+              <input class="mdl-textfield__input" type="text" id="message">
+              <label class="mdl-textfield__label" for="message">Message...</label>
+            </div>
+            <button id="submit" disabled type="submit" class="mdl-button">
+              Send
+            </button>
+          </form>
+          <form id="image-form" action="#">
+            <input id="mediaCapture" type="file" accept="image/*,capture=camera">
+            <button id="submitImage" title="Add an image" class="mdl-button">
+              <i class="material-icons">image</i>
+            </button>
+          </form>
+        </div>
+      </div>
 
-    <form name="message" action="">
-        <input name="usermsg" type="text" id="usermsg" size="63" />
-        <input name="submitmsg" type="submit"  id="submitmsg" value="Send" />
-    </for
+      <div id="must-signin-snackbar" class="mdl-js-snackbar mdl-snackbar">
+        <div class="mdl-snackbar__text"></div>
+        <button class="mdl-snackbar__action" type="button"></button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
 
     <script type="text/javascript">
         var ref = new Firebase('https://web-chat-2c57b.firebaseio.com ');
-        var usernameInput = document.querySelector('#username');
-        var textInput = document.querySelector('#text');
-        var postButton = document.querySelector('#post');
 
-        postButton.addEventListener("click", function() {
-          var msgUser = usernameInput.value;
-          var msgText = textInput.value;
-          myFirebase.set(msgUser + " says: " + msgText);
-          textInput.value = "";
+        $("#submitmsg").bind("click", function() {
+            var usermsg = $("#usermsg");
+            var usermsgValue = $.trim(usermsg.val());
+
+            if (usermsgValue.length === 0) {
+                alert('Messages cannot be null!');
+            } else {
+                ref.push({usermsg: usermsgValue}, function(error) {
+                    if (error !== null) {
+                        alert('Sending messages to Firebase failed!');
+                    }
+                });
+                usermsg.val("");
+            }
+            return false;
+        });
+        ref.on('child_added', function(snapshot) {
+            var uniqName = snapshot.name();
+            var usermsg = snapshot.val().comment;
+            var usermsgContainer = $('#comments-container');
+
+            $('<div/>', {class: 'comment-container'})
+                .html('<span class="label label-default">Comment '
+                    + uniqName + '</span>' + comment).appendTo(commentsContainer);
+
+            commentsContainer.scrollTop(commentsContainer.prop('scrollHeight'));
         });
     </script>
 
 
   <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+  <script src="./js/index.js">
+
+  </script>
   </body>
 </html>
