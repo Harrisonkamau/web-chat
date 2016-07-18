@@ -35,12 +35,27 @@ function WebChat(){
 }
 // Sets up shortcuts to Firebase features and initiate firebase auth.
 WebChat.prototype.initFirebase = function() {
-  // TODO(DEVELOPER): Initialize Firebase.
+  // Shortcuts to Firebase SDK features.
+ this.auth = firebase.auth();
+ this.database = firebase.database();
+ this.storage = firebase.storage();
+ // Initiates Firebase auth and listen to auth state changes.
+ this.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
 };
 
 // Loads chat messages history and listens for upcoming ones.
 WebChat.prototype.loadMessages = function() {
-  // TODO(DEVELOPER): Load and listens for new messages.
+  // Reference to the /messages/ database path.
+ this.messagesRef = this.database.ref('messages');
+ this.messagesRef.off();
+
+ var setMessage = function(data) {
+    var val = data.val();
+    this.displayMessage(data.key, val.name, val.text, val.photoUrl, val.imageUrl);
+  }.bind(this);
+  // let's load 12 messages
+  this.messagesRef.limitToLast(12).on('child_added', setMessage);
+  this.messagesRef.limitToLast(12).on('child_changed', setMessage);
 };
 
 // Saves a new message on the Firebase DB.
@@ -49,16 +64,33 @@ WebChat.prototype.saveMessage = function(e) {
   // Check that the user entered a message and is signed in.
   if (this.messageInput.value && this.checkSignedInWithMessage()) {
 
-    // TODO(DEVELOPER): push new message to Firebase.
+    var currentUser = this.auth.currentUser;
+    // Add a new message entry to the Firebase Database.
+    this.messagesRef.push({
+      name: currentUser.displayName,
+      text: this.messageInput.value,
+      photoUrl: currentUser.photoURL || '/images/profile_placeholder.png'
+    }).then(function() {
+    // Clear message text field and SEND button state.
+    FriendlyChat.resetMaterialTextfield(this.messageInput);
+    this.toggleButton();
+  }.bind(this)).catch(function(error) {
+    console.error('Error writing new message to Firebase Database', error);
+  });
 
   }
 };
 
 // Sets the URL of the given img element with the URL of the image stored in Firebase Storage.
 WebChat.prototype.setImageUrl = function(imageUri, imgElement) {
-  imgElement.src = imageUri;
-
-  // TODO(DEVELOPER): If image is on Firebase Storage, fetch image URL and set img element's src.
+  if (imageUri.startsWith('gs://')) {
+    imgElement.src = FriendlyChat.LOADING_IMAGE_URL; // Display a loading image first.
+    this.storage.refFromURL(imageUri).getMetadata().then(function(metadata) {
+      imgElement.src = metadata.downloadURLs[0];
+    });
+  } else {
+    imgElement.src = imageUri;
+  }
 };
 
 // Saves a new message containing an image URI in Firebase.
@@ -92,12 +124,12 @@ WebChat.prototype.signIn = function(googleUser) {
 };
 
 // Signs-out of website Chat.
-FriendlyChat.prototype.signOut = function() {
+WebChat.prototype.signOut = function() {
   // TODO(DEVELOPER): Sign out of Firebase.
 };
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
-FriendlyChat.prototype.onAuthStateChanged = function(user) {
+WebChat.prototype.onAuthStateChanged = function(user) {
   if (user) { // User is signed in!
     // Get profile pic and user's name from the Firebase user object.
     var profilePicUrl = null;   // TODO(DEVELOPER): Get profile pic.
@@ -126,4 +158,96 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
     // Show sign-in button.
     this.signInButton.removeAttribute('hidden');
   }
+};
+
+/ Returns true if user is signed-in. Otherwise false and displays a message.
+WebChat.prototype.checkSignedInWithMessage = function() {
+  /* TODO(DEVELOPER): Check if user is signed-in Firebase. */
+
+  // Display a message to the user using a Toast.
+  var data = {
+    message: 'You must sign-in first',
+    timeout: 2000
+  };
+  this.signInSnackbar.MaterialSnackbar.showSnackbar(data);
+  return false;
+};
+
+// Resets the given MaterialTextField.
+WebChat.resetMaterialTextfield = function(element) {
+  element.value = '';
+  element.parentNode.MaterialTextfield.boundUpdateClassesHandler();
+};
+
+// Template for messages.
+WebChat.MESSAGE_TEMPLATE =
+    '<div class="message-container">' +
+      '<div class="spacing"><div class="pic"></div></div>' +
+      '<div class="message"></div>' +
+      '<div class="name"></div>' +
+    '</div>';
+
+// A loading image URL.
+WebChat.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif';
+
+// Displays a Message in the UI.
+WebChat.prototype.displayMessage = function(key, name, text, picUrl, imageUri) {
+  var div = document.getElementById(key);
+  // If an element for that message does not exists yet we create it.
+  if (!div) {
+    var container = document.createElement('div');
+    container.innerHTML = FriendlyChat.MESSAGE_TEMPLATE;
+    div = container.firstChild;
+    div.setAttribute('id', key);
+    this.messageList.appendChild(div);
+  }
+  if (picUrl) {
+    div.querySelector('.pic').style.backgroundImage = 'url(' + picUrl + ')';
+  }
+  div.querySelector('.name').textContent = name;
+  var messageElement = div.querySelector('.message');
+  if (text) { // If the message is text.
+    messageElement.textContent = text;
+    // Replace all line breaks by <br>.
+    messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
+  } else if (imageUri) { // If the message is an image.
+    var image = document.createElement('img');
+    image.addEventListener('load', function() {
+      this.messageList.scrollTop = this.messageList.scrollHeight;
+    }.bind(this));
+    this.setImageUrl(imageUri, image);
+    messageElement.innerHTML = '';
+    messageElement.appendChild(image);
+  }
+  // Show the card fading-in.
+  setTimeout(function() {div.classList.add('visible')}, 1);
+  this.messageList.scrollTop = this.messageList.scrollHeight;
+  this.messageInput.focus();
+};
+
+// Enables or disables the submit button depending on the values of the input
+// fields.
+WebChat.prototype.toggleButton = function() {
+  if (this.messageInput.value) {
+    this.submitButton.removeAttribute('disabled');
+  } else {
+    this.submitButton.setAttribute('disabled', 'true');
+  }
+};
+
+// Checks that the Firebase SDK has been correctly setup and configured.
+WebChat.prototype.checkSetup = function() {
+  if (!window.firebase || !(firebase.app instanceof Function) || !window.config) {
+    window.alert('You have not configured and imported the Firebase SDK. ' +
+        'Make sure you go through the codelab setup instructions.');
+  } else if (config.storageBucket === '') {
+    window.alert('Your Firebase Storage bucket has not been enabled. Sorry about that. This is ' +
+        'actually a Firebase bug that occurs rarely.' +
+        'Please go and re-generate the Firebase initialisation snippet (step 4 of the codelab) ' +
+        'and make sure the storageBucket attribute is not empty.');
+  }
+};
+
+window.onload = function() {
+  window.friendlyChat = new WebChat();
 };
