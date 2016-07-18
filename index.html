@@ -6,12 +6,36 @@
      <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
+    <div id="wrapper">
+    <div id="menu">
+        <p class="welcome">Welcome, <b></b></p>
+        <p class="logout"><a id="exit" href="#">Exit Chat</a></p>
+        <div style="clear:both"></div>
+    </div>
+
+    <div id="chatbox"></div>
+
+    <form name="message" action="">
+        <input name="usermsg" type="text" id="usermsg" size="63" />
+        <input name="submitmsg" type="submit"  id="submitmsg" value="Send" />
+    </for
 
     <script type="text/javascript">
-        var firebase = new Firebase('https://web-chat-2c57b.firebaseio.com ');
+        var ref = new Firebase('https://web-chat-2c57b.firebaseio.com ');
+        var usernameInput = document.querySelector('#username');
+        var textInput = document.querySelector('#text');
+        var postButton = document.querySelector('#post');
+
+        postButton.addEventListener("click", function() {
+          var msgUser = usernameInput.value;
+          var msgText = textInput.value;
+          myFirebase.set(msgUser + " says: " + msgText);
+          textInput.value = "";
+        });
     </script>
 
 
   <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
   </body>
 </html>
