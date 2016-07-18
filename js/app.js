@@ -55,7 +55,7 @@ WebChat.prototype.saveMessage = function(e) {
 };
 
 // Sets the URL of the given img element with the URL of the image stored in Firebase Storage.
-FriendlyChat.prototype.setImageUrl = function(imageUri, imgElement) {
+WebChat.prototype.setImageUrl = function(imageUri, imgElement) {
   imgElement.src = imageUri;
 
   // TODO(DEVELOPER): If image is on Firebase Storage, fetch image URL and set img element's src.
@@ -63,7 +63,7 @@ FriendlyChat.prototype.setImageUrl = function(imageUri, imgElement) {
 
 // Saves a new message containing an image URI in Firebase.
 // This first saves the image in Firebase storage.
-FriendlyChat.prototype.saveImageMessage = function(event) {
+WebChat.prototype.saveImageMessage = function(event) {
   var file = event.target.files[0];
 
   // Clear the selection in the file picker input.
@@ -83,5 +83,47 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
 
     // TODO(DEVELOPER): Upload image to Firebase storage and add message.
 
+  }
+};
+
+// / Signs-in web Chat.
+WebChat.prototype.signIn = function(googleUser) {
+  // TODO(DEVELOPER): Sign in Firebase with credential from the Google user.
+};
+
+// Signs-out of website Chat.
+FriendlyChat.prototype.signOut = function() {
+  // TODO(DEVELOPER): Sign out of Firebase.
+};
+
+// Triggers when the auth state change for instance when the user signs-in or signs-out.
+FriendlyChat.prototype.onAuthStateChanged = function(user) {
+  if (user) { // User is signed in!
+    // Get profile pic and user's name from the Firebase user object.
+    var profilePicUrl = null;   // TODO(DEVELOPER): Get profile pic.
+    var userName = null;        // TODO(DEVELOPER): Get user's name.
+
+    // Set the user's profile pic and name.
+    this.userPic.style.backgroundImage = 'url(' + profilePicUrl + ')';
+    this.userName.textContent = userName;
+
+    // Show user's profile and sign-out button.
+    this.userName.removeAttribute('hidden');
+    this.userPic.removeAttribute('hidden');
+    this.signOutButton.removeAttribute('hidden');
+
+    // Hide sign-in button.
+    this.signInButton.setAttribute('hidden', 'true');
+
+    // We load currently existing chant messages.
+    this.loadMessages();
+  } else { // User is signed out!
+    // Hide user's profile and sign-out button.
+    this.userName.setAttribute('hidden', 'true');
+    this.userPic.setAttribute('hidden', 'true');
+    this.signOutButton.setAttribute('hidden', 'true');
+
+    // Show sign-in button.
+    this.signInButton.removeAttribute('hidden');
   }
 };
