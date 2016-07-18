@@ -53,3 +53,35 @@ WebChat.prototype.saveMessage = function(e) {
 
   }
 };
+
+// Sets the URL of the given img element with the URL of the image stored in Firebase Storage.
+FriendlyChat.prototype.setImageUrl = function(imageUri, imgElement) {
+  imgElement.src = imageUri;
+
+  // TODO(DEVELOPER): If image is on Firebase Storage, fetch image URL and set img element's src.
+};
+
+// Saves a new message containing an image URI in Firebase.
+// This first saves the image in Firebase storage.
+FriendlyChat.prototype.saveImageMessage = function(event) {
+  var file = event.target.files[0];
+
+  // Clear the selection in the file picker input.
+  this.imageForm.reset();
+
+  // Check if the file is an image.
+  if (!file.type.match('image.*')) {
+    var data = {
+      message: 'You can only share images',
+      timeout: 2000
+    };
+    this.signInSnackbar.MaterialSnackbar.showSnackbar(data);
+    return;
+  }
+  // Check if the user is signed-in
+  if (this.checkSignedInWithMessage()) {
+
+    // TODO(DEVELOPER): Upload image to Firebase storage and add message.
+
+  }
+};
