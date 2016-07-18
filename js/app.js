@@ -150,11 +150,11 @@ WebChat.prototype.signOut = function() {
 WebChat.prototype.onAuthStateChanged = function(user) {
   if (user) { // User is signed in!
     // Get profile pic and user's name from the Firebase user object.
-    var profilePicUrl = null;   // TODO(DEVELOPER): Get profile pic.
-    var userName = null;        // TODO(DEVELOPER): Get user's name.
+    var profilePicUrl = user.photoURL;
+    var userName = user.displayName;
 
     // Set the user's profile pic and name.
-    this.userPic.style.backgroundImage = 'url(' + profilePicUrl + ')';
+    this.userPic.style.backgroundImage = 'url('' + (profilePicUrl || '/images/profile_placeholder.png') + ');
     this.userName.textContent = userName;
 
     // Show user's profile and sign-out button.
@@ -178,9 +178,11 @@ WebChat.prototype.onAuthStateChanged = function(user) {
   }
 };
 
-/ Returns true if user is signed-in. Otherwise false and displays a message.
+// / Returns true if user is signed-in. Otherwise false and displays a message.
 WebChat.prototype.checkSignedInWithMessage = function() {
-  /* TODO(DEVELOPER): Check if user is signed-in Firebase. */
+  if (this.auth.currentUser) {
+    return true;
+  }
 
   // Display a message to the user using a Toast.
   var data = {
@@ -256,16 +258,12 @@ WebChat.prototype.toggleButton = function() {
 // Checks that the Firebase SDK has been correctly setup and configured.
 WebChat.prototype.checkSetup = function() {
   if (!window.firebase || !(firebase.app instanceof Function) || !window.config) {
-    window.alert('You have not configured and imported the Firebase SDK. ' +
-        'Make sure you go through the codelab setup instructions.');
+    window.alert('You have not configured and imported the Firebase SDK.');
   } else if (config.storageBucket === '') {
-    window.alert('Your Firebase Storage bucket has not been enabled. Sorry about that. This is ' +
-        'actually a Firebase bug that occurs rarely.' +
-        'Please go and re-generate the Firebase initialisation snippet (step 4 of the codelab) ' +
-        'and make sure the storageBucket attribute is not empty.');
+    window.alert('Your Firebase Storage bucket is empty.');
   }
 };
 
 window.onload = function() {
-  window.friendlyChat = new WebChat();
+  window.webchat = new WebChat();
 };
