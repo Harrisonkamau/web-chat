@@ -69,41 +69,17 @@
     </div>
   </main>
 </div>
+<script type="text/javascript">
+  var ref = new Firebase('https://webchat-e0aff.firebaseio.com');
+    var config = {
+      apiKey: "apiKey",
+      authDomain: "webchat-e0aff.firebaseio.com",
+      databaseURL: "https://webchat-e0aff.firebaseio.com",
+      storageBucket: "webchat-e0aff.firebaseio.comm",
+    };
+    ref.initializeApp(config);
 
-
-    <script type="text/javascript">
-        var ref = new Firebase('https://web-chat-2c57b.firebaseio.com ');
-
-        $("#submitmsg").bind("click", function() {
-            var usermsg = $("#usermsg");
-            var usermsgValue = $.trim(usermsg.val());
-
-            if (usermsgValue.length === 0) {
-                alert('Messages cannot be null!');
-            } else {
-                ref.push({usermsg: usermsgValue}, function(error) {
-                    if (error !== null) {
-                        alert('Sending messages to Firebase failed!');
-                    }
-                });
-                usermsg.val("");
-            }
-            return false;
-        });
-        ref.on('child_added', function(snapshot) {
-            var uniqName = snapshot.name();
-            var usermsg = snapshot.val().comment;
-            var usermsgContainer = $('#comments-container');
-
-            $('<div/>', {class: 'comment-container'})
-                .html('<span class="label label-default">Comment '
-                    + uniqName + '</span>' + comment).appendTo(commentsContainer);
-
-            commentsContainer.scrollTop(commentsContainer.prop('scrollHeight'));
-        });
-    </script>
-
-
+</script>
   <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
   <script src="./js/index.js">
