@@ -112,20 +112,38 @@ WebChat.prototype.saveImageMessage = function(event) {
   }
   // Check if the user is signed-in
   if (this.checkSignedInWithMessage()) {
+    var currentUser = this.auth.currentUser;
+        this.messagesRef.push({
+          name: currentUser.displayName,
+          imageUrl: FriendlyChat.LOADING_IMAGE_URL,
+          photoUrl: currentUser.photoURL || '/images/profile_placeholder.png'
+        }).then(function(data) {
 
-    // TODO(DEVELOPER): Upload image to Firebase storage and add message.
+          // Upload the image to Firebase Storage.
+          var uploadTask = this.storage.ref(currentUser.uid + '/' + Date.now() + '/' + file.name)
+              .put(file, {'contentType': file.type});
+          // Listen for upload completion.
+          uploadTask.on('state_changed', null, function(error) {
+            console.error('There was an error uploading a file to Firebase Storage:', error);
+          }, function() {
 
+            // Get the file's Storage URI and update the chat message placeholder.
+            var filePath = uploadTask.snapshot.metadata.fullPath;
+            data.update({imageUrl: this.storage.ref(filePath).toString()});
+          }.bind(this));
+        }.bind(this));
   }
 };
 
 // / Signs-in web Chat.
-WebChat.prototype.signIn = function(googleUser) {
-  // TODO(DEVELOPER): Sign in Firebase with credential from the Google user.
+WebChat.prototype.signIn = function() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  this.auth.signInWithPopup(provider);
 };
 
 // Signs-out of website Chat.
 WebChat.prototype.signOut = function() {
-  // TODO(DEVELOPER): Sign out of Firebase.
+  this.auth.signOut();
 };
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
