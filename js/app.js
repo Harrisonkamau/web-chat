@@ -266,8 +266,7 @@ FriendlyChat.prototype.toggleButton = function() {
 // Checks that the Firebase SDK has been correctly setup and configured.
 FriendlyChat.prototype.checkSetup = function() {
   if (!window.firebase || !(firebase.app instanceof Function) || !window.config) {
-    window.alert('You have not configured and imported the Firebase SDK. ' +
-        'Make sure you go through the codelab setup instructions.');
+    window.alert('You have not configured and imported the Firebase SDK.');
   } else if (config.storageBucket === '') {
     window.alert('Your Firebase Storage bucket has not been enabled. Sorry about that. This is ' +
         'actually a Firebase bug that occurs rarely.' +
